@@ -26,17 +26,40 @@ export interface SheetData {
  * @returns A promise that resolves to a SheetData object containing column names and rows of data.
  */
 export async function getSheetData(sheetId: string): Promise<SheetData> {
-  // TODO: Implement this by calling the Google Sheets API.
-  // You will need to handle authentication and data parsing.
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  if (!process.env.GOOGLE_API_KEY) {
+    throw new Error('GOOGLE_API_KEY is not set in environment variables.');
+  }
 
-  // Stubbed data for demonstration purposes.
-  return {
-    columnNames: [`Title-${sheetId}`, `Description-${sheetId}`, `Status-${sheetId}`],
-    rows: [
-      { [`Title-${sheetId}`]: `Value1_1-${sheetId}`, [`Description-${sheetId}`]: `Value1_2-${sheetId}`, [`Status-${sheetId}`]: `Value1_3-${sheetId}` },
-      { [`Title-${sheetId}`]: `Value2_1-${sheetId}`, [`Description-${sheetId}`]: `Value2_2-${sheetId}`, [`Status-${sheetId}`]: `Value2_3-${sheetId}` },
-        { [`Title-${sheetId}`]: `Value3_1-${sheetId}`, [`Description-${sheetId}`]: `Value3_2-${sheetId}`, [`Status-${sheetId}`]: `Value3_3-${sheetId}` },
-    ],
-  };
+  const spreadsheetId = sheetId;
+  const apiKey = process.env.GOOGLE_API_KEY;
+  const range = 'Sheet1'; // default sheet name
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.values || data.values.length === 0) {
+      return { columnNames: [], rows: [] }; // Return empty data if no values are found
+    }
+
+    const columnNames = data.values[0] as string[];
+    const rows = data.values.slice(1).map((row: any[]) => {
+      const rowData: { [key: string]: any } = {};
+      for (let i = 0; i < columnNames.length; i++) {
+        rowData[columnNames[i]] = row[i] || ''; // Handles undefined values
+      }
+      return rowData;
+    });
+
+    return { columnNames, rows };
+  } catch (error: any) {
+    console.error("Error fetching data from Google Sheets:", error);
+    throw new Error(error.message || "Failed to fetch data from Google Sheets");
+  }
 }
