@@ -22,16 +22,19 @@ export interface SheetData {
 /**
  * Asynchronously retrieves data from a specified Google Sheet.
  *
- * @param sheetId The ID of the Google Sheet to fetch data from.
  * @returns A promise that resolves to a SheetData object containing column names and rows of data.
  */
-export async function getSheetData(sheetId: string): Promise<SheetData> {
-  if (!process.env.GOOGLE_API_KEY) {
-    throw new Error('GOOGLE_API_KEY is not set in environment variables.');
+export async function getSheetData(): Promise<SheetData> {
+  if (!process.env.NEXT_PUBLIC_GOOGLE_API_KEY) {
+    throw new Error('NEXT_PUBLIC_GOOGLE_API_KEY is not set in environment variables.');
   }
 
-  const spreadsheetId = sheetId;
-  const apiKey = process.env.GOOGLE_API_KEY;
+    if (!process.env.NEXT_PUBLIC_SHEET_ID) {
+    throw new Error('NEXT_PUBLIC_SHEET_ID is not set in environment variables.');
+  }
+
+  const spreadsheetId = process.env.NEXT_PUBLIC_SHEET_ID;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
   const range = 'Sheet1'; // default sheet name
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
 
@@ -61,5 +64,55 @@ export async function getSheetData(sheetId: string): Promise<SheetData> {
   } catch (error: any) {
     console.error("Error fetching data from Google Sheets:", error);
     throw new Error(error.message || "Failed to fetch data from Google Sheets");
+  }
+}
+
+/**
+ * Appends a new row to the Google Sheet.
+ * @param rowData An object containing the data for the new row.  Keys must match column names.
+ * @returns A promise that resolves when the data has been appended.
+ */
+export async function appendSheetData(rowData: { [key: string]: any }): Promise<void> {
+  if (!process.env.NEXT_PUBLIC_GOOGLE_API_KEY) {
+    throw new Error('NEXT_PUBLIC_GOOGLE_API_KEY is not set in environment variables.');
+  }
+
+  if (!process.env.NEXT_PUBLIC_SHEET_ID) {
+    throw new Error('NEXT_PUBLIC_SHEET_ID is not set in environment variables.');
+  }
+
+  const spreadsheetId = process.env.NEXT_PUBLIC_SHEET_ID;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+  const range = 'Sheet1'; // default sheet name
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS&key=${apiKey}`;
+
+  try {
+    const sheetData = await getSheetData();
+    const columnNames = sheetData.columnNames;
+
+    // Ensure that all rowData keys are present in the columnNames
+    const values = [columnNames.map(columnName => rowData[columnName] !== undefined ? rowData[columnName] : '')];
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        values: values,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error appending data to Google Sheets:", errorData);
+      throw new Error(`Failed to append data: ${response.status} ${response.statusText} - ${errorData.error.message}`);
+    }
+
+    const data = await response.json();
+    console.log("Data appended successfully:", data);
+  } catch (error: any) {
+    console.error("Error appending data to Google Sheets:", error);
+    throw new Error(error.message || "Failed to append data to Google Sheets");
   }
 }
