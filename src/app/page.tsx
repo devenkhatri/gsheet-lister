@@ -34,13 +34,15 @@ function SheetItem({ row, columnNames }: { row: SheetRow; columnNames: string[] 
       <DialogTrigger asChild>
         <Button variant="ghost" className="w-full justify-start rounded-none border-b py-4 hover:bg-secondary">
           {title}
-          {columnNames.map((columnName) => (
-              row[columnName] && columnName !== 'title' ? (
-                <span key={columnName} className="ml-2 text-xs text-gray-500">
+          {columnNames.map((columnName, index) => {
+              // Generate a more robust unique ID
+              const uniqueId = `${columnName}-${index}`;
+              return row[columnName] && columnName !== 'title' ? (
+                <span key={uniqueId} className="ml-2 text-xs text-gray-500">
                   {row[columnName]}
                 </span>
               ) : null
-            ))}
+            })}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
