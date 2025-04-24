@@ -130,7 +130,7 @@ export default function Home() {
             <Input
               type="text"
               placeholder="Google Sheet ID"
-              value={sheetId}
+              value={sheetId || process.env.NEXT_PUBLIC_SHEET_ID}
               onChange={(e) => setSheetId(e.target.value)}
             />
             <Button onClick={fetchData} disabled={isLoading}>

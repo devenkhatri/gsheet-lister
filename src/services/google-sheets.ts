@@ -35,13 +35,16 @@ export async function getSheetData(): Promise<SheetData> {
 
   const spreadsheetId = process.env.NEXT_PUBLIC_SHEET_ID;
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
-  const range = 'Sheet1'; // default sheet name
+  const sheetName = process.env.NEXT_PUBLIC_SHEET_ID;
+  const range = sheetName || 'Sheet1'; // default sheet name
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
 
   try {
     const response = await fetch(url);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`HTTP error ${response.status}: ${response.statusText} - ${errorText}`);
       throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
     }
 
@@ -83,7 +86,8 @@ export async function appendSheetData(rowData: { [key: string]: any }): Promise<
 
   const spreadsheetId = process.env.NEXT_PUBLIC_SHEET_ID;
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
-  const range = 'Sheet1'; // default sheet name
+  const sheetName = process.env.NEXT_PUBLIC_SHEET_ID;
+  const range = sheetName || 'Sheet1'; // default sheet name
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS&key=${apiKey}`;
 
   try {
