@@ -21,16 +21,19 @@ import { Label } from "@/components/ui/label";
 function SheetItem({ row, columnNames }: { row: any; columnNames: string[] }) {
   const [open, setOpen] = useState(false);
 
+  // Determine title
+  let title = row["title"] || row[columnNames[0]] || "No Title";
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" className="w-full justify-start rounded-none border-b py-4 hover:bg-secondary">
-          {row[columnNames[0]] || "No Title"}
+          {title}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{row[columnNames[0]] || "No Title"}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             Full details from the Google Sheet.
           </DialogDescription>
