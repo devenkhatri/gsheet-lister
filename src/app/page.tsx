@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SheetData, getSheetData, appendSheetData } from "@/services/google-sheets";
@@ -17,8 +17,27 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table"
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
-function SheetItem({ row, columnNames }: { row: any; columnNames: string[] }) {
+interface SheetRow {
+  [key: string]: string;
+}
+
+function SheetItem({ row, columnNames }: { row: SheetRow; columnNames: string[] }) {
   const [open, setOpen] = useState(false);
 
   // Determine title
@@ -121,6 +140,33 @@ export default function Home() {
     localStorage.setItem('sheetId', sheetId);
   }, [sheetId]);
 
+    const columns = useMemo<ColumnDef<SheetRow>[]>(() => {
+        if (!sheetData) return [];
+
+        return sheetData.columnNames.map(columnName => ({
+            accessorKey: columnName,
+            header: columnName,
+            cell: ({ row }) => {
+                const cellValue = row.getValue(columnName);
+                return (
+                  <div className="w-full">
+                  {typeof cellValue === 'string' ? cellValue : String(cellValue)}
+                  </div>
+                )
+            }
+        }));
+    }, [sheetData]);
+
+    const data = useMemo(() => {
+        return sheetData ? sheetData.rows : [];
+    }, [sheetData]);
+
+    const table = useReactTable({
+        data,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+    });
+
   return (
     <div className="container mx-auto p-4">
       <Card>
@@ -147,11 +193,37 @@ export default function Home() {
             <>
               <Separator />
               <div className="text-lg font-medium">Data Listing</div>
-              <ScrollArea className="rounded-md border">
-                {sheetData.rows.map((row, index) => (
-                  <SheetItem key={index} row={row} columnNames={sheetData.columnNames} />
-                ))}
-              </ScrollArea>
+                <Table>
+                  <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                          return (
+                            <TableHead key={header.id}>
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                            </TableHead>
+                          )
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows.map((row) => (
+                      <TableRow key={row.id}>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
 
               <Separator />
 
