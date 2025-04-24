@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 
 interface SheetRow {
@@ -74,8 +75,12 @@ export default function Home() {
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newRowData, setNewRowData] = useState<{ [key: string]: any }>({});
-    const { toast } = useToast();
+  const { toast } = useToast();
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10); // Default page size
+    const pageSizeOptions = [10, 20, 50, 100];
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -89,6 +94,7 @@ export default function Home() {
                 initialNewRowData[columnName] = "";
             });
             setNewRowData(initialNewRowData);
+            setCurrentPage(1); // Reset to first page after data refresh
     } catch (e: any) {
       setError(e.message || "Failed to fetch data");
       console.error(e);
@@ -135,6 +141,12 @@ export default function Home() {
     localStorage.setItem('sheetId', sheetId);
   }, [sheetId]);
 
+    // Calculate pagination values
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedRows = sheetData?.rows.slice(startIndex, endIndex) || [];
+    const totalPages = sheetData ? Math.ceil(sheetData.rows.length / pageSize) : 0;
+
   return (
     <div className="container mx-auto p-4">
       <Card>
@@ -160,12 +172,45 @@ export default function Home() {
           {sheetData && (
             <>
               <Separator />
-              <div className="text-lg font-medium">Data Listing</div>
+
+                <div className="flex items-center justify-between">
+                    <div className="text-lg font-medium">Data Listing</div>
+                    <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select page size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {pageSizeOptions.map((size) => (
+                                <SelectItem key={size} value={size.toString()}>
+                                    {size} records
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
               <ScrollArea className="h-[400px] w-full">
-                {sheetData.rows.map((row, index) => (
+                {paginatedRows.map((row, index) => (
                   <SheetItem key={index} row={row} columnNames={sheetData.columnNames} />
                 ))}
               </ScrollArea>
+
+                <div className="flex items-center justify-between">
+                    <Button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </Button>
+                    <span>{`Page ${currentPage} of ${totalPages}`}</span>
+                    <Button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </Button>
+                </div>
+
               <Separator />
 
               <div className="text-lg font-medium">Add New Row</div>
