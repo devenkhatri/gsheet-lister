@@ -258,28 +258,30 @@ export default function Home() {
                                 Add a new row to the Google Sheet.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            {sheetData.columnNames.map((columnName, index) => {
-                                // Generate a more robust unique ID
-                                const uniqueId = `${columnName}-${index}`;
-                                return (
-                                    <div key={uniqueId} className="grid gap-1.5">
-                                        <Label htmlFor={uniqueId}>{columnName}</Label>
-                                        <Textarea
-                                            id={uniqueId}
-                                            placeholder={columnName}
-                                            value={newRowData[columnName] || ""}
-                                            onChange={(e) =>
-                                                setNewRowData({
-                                                    ...newRowData,
-                                                    [columnName]: e.target.value,
-                                                })
-                                            }
-                                        />
-                                    </div>
-                                );
-                            })}
-                        </div>
+                         <ScrollArea className="h-[300px] w-full">
+                            <div className="grid gap-4 py-4">
+                                {sheetData.columnNames.map((columnName, index) => {
+                                    // Generate a more robust unique ID
+                                    const uniqueId = `${columnName}-${index}`;
+                                    return (
+                                        <div key={uniqueId} className="grid gap-1.5">
+                                            <Label htmlFor={uniqueId}>{columnName}</Label>
+                                            <Textarea
+                                                id={uniqueId}
+                                                placeholder={columnName}
+                                                value={newRowData[columnName] || ""}
+                                                onChange={(e) =>
+                                                    setNewRowData({
+                                                        ...newRowData,
+                                                        [columnName]: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                         </ScrollArea>
                         <DialogFooter>
                             <Button type="button" onClick={handleAddRow} disabled={isAdding}>
                                 {isAdding ? "Adding..." : "Add Row"}
