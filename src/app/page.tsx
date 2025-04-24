@@ -195,8 +195,8 @@ export default function Home() {
               <div className="text-lg font-medium">Data Listing</div>
                 <Table>
                   <TableHeader>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <TableRow key={headerGroup.id}>
+                    {table.getHeaderGroups().map((headerGroup, index) => (
+                      <TableRow key={headerGroup.id + "-" + index}>
                         {headerGroup.headers.map((header, index) => {
                           return (
                             <TableHead key={`${header.id}-${index}`}>
@@ -215,8 +215,8 @@ export default function Home() {
                   <TableBody>
                     {table.getRowModel().rows.map((row) => (
                       <TableRow key={row.id}>
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
+                        {row.getVisibleCells().map((cell, index) => (
+                          <TableCell key={cell.id + "-" + index}>
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </TableCell>
                         ))}
@@ -259,4 +259,3 @@ export default function Home() {
     </div>
   );
 }
-
