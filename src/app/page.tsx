@@ -154,11 +154,13 @@ export default function Home() {
 
               <div className="text-lg font-medium">Add New Row</div>
               <div className="grid gap-2">
-                {sheetData.columnNames.map((columnName) => (
-                  <div key={columnName} className="grid gap-1.5">
-                    <Label htmlFor={columnName}>{columnName}</Label>
+                {sheetData.columnNames.map((columnName) => {
+                   const uniqueId = `${columnName}-${Date.now()}`; // Create a unique ID
+                    return (
+                  <div key={uniqueId} className="grid gap-1.5">
+                    <Label htmlFor={uniqueId}>{columnName}</Label>
                     <Textarea
-                      id={columnName}
+                      id={uniqueId}
                       placeholder={columnName}
                       value={newRowData[columnName] || ""}
                       onChange={(e) =>
@@ -169,7 +171,7 @@ export default function Home() {
                       }
                     />
                   </div>
-                ))}
+                )})}
                 <Button onClick={handleAddRow} disabled={isAdding}>
                   {isAdding ? "Adding..." : "Add Row"}
                 </Button>

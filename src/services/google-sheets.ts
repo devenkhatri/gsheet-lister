@@ -35,7 +35,7 @@ export async function getSheetData(): Promise<SheetData> {
 
   const spreadsheetId = process.env.NEXT_PUBLIC_SHEET_ID;
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
-  const sheetName = process.env.NEXT_PUBLIC_SHEET_ID;
+  const sheetName = process.env.NEXT_PUBLIC_SHEET_NAME;
   const range = sheetName || 'Sheet1'; // default sheet name
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
 
@@ -92,7 +92,7 @@ export async function appendSheetData(rowData: { [key: string]: any }): Promise<
 
   const spreadsheetId = process.env.NEXT_PUBLIC_SHEET_ID;
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
-  const sheetName = process.env.NEXT_PUBLIC_SHEET_ID;
+  const sheetName = process.env.NEXT_PUBLIC_SHEET_NAME;
   const range = sheetName || 'Sheet1'; // default sheet name
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS&key=${apiKey}`;
 
