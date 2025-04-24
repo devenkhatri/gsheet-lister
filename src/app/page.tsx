@@ -196,6 +196,12 @@ export default function Home() {
               </ScrollArea>
 
                 <div className="flex items-center justify-between">
+                     <Button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                    >
+                        First Page
+                    </Button>
                     <Button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
@@ -208,6 +214,12 @@ export default function Home() {
                         disabled={currentPage === totalPages}
                     >
                         Next
+                    </Button>
+                     <Button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                    >
+                        Last Page
                     </Button>
                 </div>
 
