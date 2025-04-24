@@ -155,7 +155,8 @@ export default function Home() {
               <div className="text-lg font-medium">Add New Row</div>
               <div className="grid gap-2">
                 {sheetData.columnNames.map((columnName) => {
-                   const uniqueId = `${columnName}-${Date.now()}`; // Create a unique ID
+                    // Generate a more robust unique ID
+                    const uniqueId = `${columnName}-${Math.random().toString(36).substring(2, 15)}`;
                     return (
                   <div key={uniqueId} className="grid gap-1.5">
                     <Label htmlFor={uniqueId}>{columnName}</Label>
