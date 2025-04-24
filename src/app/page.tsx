@@ -197,9 +197,9 @@ export default function Home() {
                   <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                       <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => {
+                        {headerGroup.headers.map((header, index) => {
                           return (
-                            <TableHead key={header.id}>
+                            <TableHead key={`${header.id}-${index}`}>
                               {header.isPlaceholder
                                 ? null
                                 : flexRender(
@@ -229,9 +229,9 @@ export default function Home() {
 
               <div className="text-lg font-medium">Add New Row</div>
               <div className="grid gap-2">
-                {sheetData.columnNames.map((columnName) => {
+                {sheetData.columnNames.map((columnName, index) => {
                     // Generate a more robust unique ID
-                    const uniqueId = `${columnName}-${Math.random().toString(36).substring(2, 15)}`;
+                    const uniqueId = `${columnName}-${index}`;
                     return (
                   <div key={uniqueId} className="grid gap-1.5">
                     <Label htmlFor={uniqueId}>{columnName}</Label>
@@ -259,3 +259,4 @@ export default function Home() {
     </div>
   );
 }
+
