@@ -34,6 +34,13 @@ function SheetItem({ row, columnNames }: { row: SheetRow; columnNames: string[] 
       <DialogTrigger asChild>
         <Button variant="ghost" className="w-full justify-start rounded-none border-b py-4 hover:bg-secondary">
           {title}
+          {columnNames.map((columnName) => (
+              row[columnName] && columnName !== 'title' ? (
+                <span key={columnName} className="ml-2 text-xs text-gray-500">
+                  {row[columnName]}
+                </span>
+              ) : null
+            ))}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -45,8 +52,8 @@ function SheetItem({ row, columnNames }: { row: SheetRow; columnNames: string[] 
         </DialogHeader>
         <ScrollArea className="h-[300px] w-full">
           <div className="grid gap-4">
-            {columnNames.map((columnName) => (
-              <div key={columnName}>
+            {columnNames.map((columnName, index) => (
+              <div key={`${columnName}-${index}`}>
                 <div className="text-sm font-medium leading-none">{columnName}</div>
                 <p className="text-sm text-muted-foreground">{row[columnName] || "N/A"}</p>
               </div>
