@@ -75,11 +75,12 @@ export default function Home() {
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newRowData, setNewRowData] = useState<{ [key: string]: any }>({});
+    const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10); // Default page size
+    const [pageSize, setPageSize] = useState(15); // Default page size
     const pageSizeOptions = [10, 20, 50, 100];
 
   const fetchData = async () => {
@@ -142,10 +143,19 @@ export default function Home() {
   }, [sheetId]);
 
     // Calculate pagination values
+    const filteredRows = sheetData?.rows.filter(row => {
+            if (!searchQuery) return true; // If no search query, show all rows
+
+            // Check if the search query exists in any of the column values
+            return Object.values(row).some(value =>
+                value?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }) || [];
+
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginatedRows = sheetData?.rows.slice(startIndex, endIndex) || [];
-    const totalPages = sheetData ? Math.ceil(sheetData.rows.length / pageSize) : 0;
+    const paginatedRows = filteredRows.slice(startIndex, endIndex);
+    const totalPages = sheetData ? Math.ceil(filteredRows.length / pageSize) : 0;
 
   return (
     <div className="container mx-auto p-4">
@@ -173,21 +183,31 @@ export default function Home() {
             <>
               <Separator />
 
-                <div className="flex items-center justify-between">
-                    <div className="text-lg font-medium">Data Listing</div>
-                    <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select page size" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {pageSizeOptions.map((size) => (
-                                <SelectItem key={size} value={size.toString()}>
-                                    {size} records
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+              <div className="flex items-center justify-between">
+                  <div className="text-lg font-medium">Data Listing</div>
+                   <Input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setCurrentPage(1); // Reset to first page after search
+                        }}
+                        className="max-w-sm"
+                    />
+                  <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
+                      <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select page size" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          {pageSizeOptions.map((size) => (
+                              <SelectItem key={size} value={size.toString()}>
+                                  {size} records
+                              </SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+              </div>
 
               <ScrollArea className="h-[400px] w-full">
                 {paginatedRows.map((row, index) => (
