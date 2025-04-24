@@ -77,6 +77,7 @@ export default function Home() {
   const [newRowData, setNewRowData] = useState<{ [key: string]: any }>({});
     const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
+  const [openAddDialog, setOpenAddDialog] = useState(false);
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -116,6 +117,7 @@ export default function Home() {
             });
             // Refresh data
             await fetchData();
+            setOpenAddDialog(false); // Close the dialog after successful add
         } catch (e: any) {
             setError(e.message || "Failed to add row");
             console.error(e);
@@ -245,31 +247,46 @@ export default function Home() {
 
               <Separator />
 
-              <div className="text-lg font-medium">Add New Row</div>
-              <div className="grid gap-2">
-                {sheetData.columnNames.map((columnName, index) => {
-                    // Generate a more robust unique ID
-                    const uniqueId = `${columnName}-${index}`;
-                    return (
-                  <div key={uniqueId} className="grid gap-1.5">
-                    <Label htmlFor={uniqueId}>{columnName}</Label>
-                    <Textarea
-                      id={uniqueId}
-                      placeholder={columnName}
-                      value={newRowData[columnName] || ""}
-                      onChange={(e) =>
-                        setNewRowData({
-                          ...newRowData,
-                          [columnName]: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                )})}
-                <Button onClick={handleAddRow} disabled={isAdding}>
-                  {isAdding ? "Adding..." : "Add Row"}
-                </Button>
-              </div>
+                <Dialog open={openAddDialog} onOpenChange={setOpenAddDialog}>
+                    <DialogTrigger asChild>
+                        <Button>Add Row</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[525px]">
+                        <DialogHeader>
+                            <DialogTitle>Add New Row</DialogTitle>
+                            <DialogDescription>
+                                Add a new row to the Google Sheet.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            {sheetData.columnNames.map((columnName, index) => {
+                                // Generate a more robust unique ID
+                                const uniqueId = `${columnName}-${index}`;
+                                return (
+                                    <div key={uniqueId} className="grid gap-1.5">
+                                        <Label htmlFor={uniqueId}>{columnName}</Label>
+                                        <Textarea
+                                            id={uniqueId}
+                                            placeholder={columnName}
+                                            value={newRowData[columnName] || ""}
+                                            onChange={(e) =>
+                                                setNewRowData({
+                                                    ...newRowData,
+                                                    [columnName]: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" onClick={handleAddRow} disabled={isAdding}>
+                                {isAdding ? "Adding..." : "Add Row"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </>
           )}
         </CardContent>
@@ -277,3 +294,14 @@ export default function Home() {
     </div>
   );
 }
+
+const DialogFooter = ({
+    className,
+    ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+    <div
+        className="sm:flex w-full justify-end space-x-2"
+        {...props}
+    />
+)
+DialogFooter.displayName = "DialogFooter"
