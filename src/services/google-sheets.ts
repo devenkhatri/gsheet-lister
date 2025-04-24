@@ -45,7 +45,13 @@ export async function getSheetData(): Promise<SheetData> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`HTTP error ${response.status}: ${response.statusText} - ${errorText}`);
-      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+      try {
+        const errorJson = JSON.parse(errorText);
+        throw new Error(`Failed to fetch data: ${response.status} ${response.statusText} - ${JSON.stringify(errorJson)}`);
+      } catch (jsonError) {
+        // If parsing JSON fails, just use the raw error text
+        throw new Error(`Failed to fetch data: ${response.status} ${response.statusText} - ${errorText}`);
+      }
     }
 
     const data = await response.json();
