@@ -116,7 +116,7 @@ export async function appendSheetData(rowData: { [key: string]: any }): Promise<
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Error appending data to Google Sheets:", errorData);
-      throw new Error(`Failed to append data: ${response.status} ${response.statusText} - ${errorData.error.message}`);
+      throw new Error(`Failed to append data: ${response.status} ${response.statusText} - ${errorData?.error?.message || JSON.stringify(errorData)}`);
     }
 
     const data = await response.json();
