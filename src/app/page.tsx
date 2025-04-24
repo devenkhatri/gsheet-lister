@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SheetData, getSheetData, appendSheetData } from "@/services/google-sheets";
@@ -17,23 +17,6 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getPaginationRowModel,
-} from "@tanstack/react-table"
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 
 interface SheetRow {
@@ -143,39 +126,6 @@ export default function Home() {
     localStorage.setItem('sheetId', sheetId);
   }, [sheetId]);
 
-    const columns = useMemo<ColumnDef<SheetRow>[]>(() => {
-        if (!sheetData) return [];
-
-        return sheetData.columnNames.map(columnName => ({
-            accessorKey: columnName,
-            header: columnName,
-            cell: ({ row }) => {
-                const cellValue = row.getValue(columnName);
-                return (
-                  <div className="max-w-[200px] truncate">
-                  {typeof cellValue === 'string' ? cellValue : String(cellValue)}
-                  </div>
-                )
-            }
-        }));
-    }, [sheetData]);
-
-    const data = useMemo(() => {
-        return sheetData ? sheetData.rows : [];
-    }, [sheetData]);
-
-    const table = useReactTable({
-        data,
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        initialState: {
-            pagination: {
-                pageSize: 20,
-            }
-        }
-    });
-
   return (
     <div className="container mx-auto p-4">
       <Card>
@@ -202,81 +152,11 @@ export default function Home() {
             <>
               <Separator />
               <div className="text-lg font-medium">Data Listing</div>
-                <Table>
-                  <TableHeader>
-                    {table.getHeaderGroups().map((headerGroup, index) => (
-                      <TableRow key={headerGroup.id + "-" + index}>
-                        {headerGroup.headers.map((header, index) => {
-                          return (
-                            <TableHead key={`${header.id}-${index}`}>
-                              {header.isPlaceholder
-                                ? null
-                                : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext()
-                                  )}
-                            </TableHead>
-                          )
-                        })}
-                      </TableRow>
-                    ))}
-                  </TableHeader>
-                  <TableBody>
-                    {table.getRowModel().rows.map((row, index) => (
-                      <TableRow key={row.id + "-" + index}>
-                        {row.getVisibleCells().map((cell, index) => (
-                          <TableCell key={cell.id + "-" + index}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                                <div className="flex items-center justify-between">
-                    <div className="flex-1 text-sm text-muted-foreground">
-                        {table.getFilteredRowModel().rows.length} of {data.length} row(s)
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <Button
-                            variant="outline"
-                            className="hidden h-8 w-8 p-0 lg:flex"
-                            onClick={() => table.setPageIndex(0)}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            <span className="sr-only">Go to first page</span>
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-8 w-8 p-0"
-                            onClick={() => table.previousPage()}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            <span className="sr-only">Go to previous page</span>
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-8 w-8 p-0"
-                            onClick={() => table.nextPage()}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            <span className="sr-only">Go to next page</span>
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="hidden h-8 w-8 p-0 lg:flex"
-                            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            <span className="sr-only">Go to last page</span>
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
-
+              <ScrollArea className="h-[400px] w-full">
+                {sheetData.rows.map((row, index) => (
+                  <SheetItem key={index} row={row} columnNames={sheetData.columnNames} />
+                ))}
+              </ScrollArea>
               <Separator />
 
               <div className="text-lg font-medium">Add New Row</div>
